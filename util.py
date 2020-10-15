@@ -30,11 +30,11 @@ def image_data_generator():
                                     classes = get_class_names(),
                                     shuffle = True)
 
-    validation_generator = test_datagen.flow_from_directory(
+    validation_generator = train_datagen.flow_from_directory(
                                     train_dir,
                                     target_size = target_size,
                                     color_mode = color_mode,
-                                    batch_size = valid_size,
+                                    batch_size = batch_size,
                                     classes = get_class_names(),
                                     shuffle = True)
 
