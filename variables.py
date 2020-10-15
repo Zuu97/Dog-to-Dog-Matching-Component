@@ -1,6 +1,6 @@
 import os
-batch_size = 8
-valid_size = 4
+batch_size = 64
+valid_size = 32
 color_mode = 'rgb'
 width = 224
 height = 224
@@ -13,13 +13,14 @@ shift_range = 0.2
 rescale = 1./255
 dense_1 = 512
 dense_2 = 256
-dense_3 = 64
-num_classes = 5
+dense_3 = 128
+dense_4 = 64
+num_classes = 120
 epochs = 10
 verbose = 1
 val_split = 0.15
 
 # data directories and model paths
 train_dir = os.path.join(os.getcwd(), 'Images/')
-model_weights = "weights/doggy_mobilenet.h5"
-model_architecture = "weights/doggy_mobilenet.json"
+model_weights = "weights/dog_mobilenet.h5"
+model_architecture = "weights/dog_mobilenet.json"
