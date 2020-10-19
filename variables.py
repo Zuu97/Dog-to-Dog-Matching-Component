@@ -1,5 +1,10 @@
 import os
-batch_size = 64
+num_classes = 20
+val_split = 0.2
+verbose = 1
+
+# CNN params
+batch_size_cnn = 64
 color_mode = 'rgb'
 width = 224
 height = 224
@@ -10,16 +15,26 @@ zoom_range = 0.15
 rotation_range = 20
 shift_range = 0.2
 rescale = 1./255
-dense_1 = 512
-dense_2 = 256
-dense_3 = 128
-dense_4 = 64
-num_classes = 120
-epochs = 10
-verbose = 1
-val_split = 0.2
-
-# data directories and model paths
+dense_1_cnn = 512
+dense_2_cnn = 256
+dense_3_cnn = 128
+epochs_cnn = 20
 train_dir = os.path.join(os.getcwd(), 'Images/')
-model_weights = "weights/dog_mobilenet.h5"
-model_architecture = "weights/dog_mobilenet.json"
+cnn_weights = "weights/dog_mobilenet.h5"
+cnn_architecture = "weights/dog_mobilenet.json"
+
+## RNN params
+csv_path = 'dog_reviews.csv'
+vocab_size = 3000
+max_length = 100
+embedding_dimS = 512
+trunc_type = 'post'
+oov_tok = "<OOV>"
+epochs_rnn = 20
+batch_size_rnn = 12
+size_lstm  = 256
+dense_1_rnn = 256
+dense_2_rnn = 64
+learning_rate = 0.00001
+rnn_weights = "weights/dog_lstm.h5"
+rnn_architecture = "weights/dog_lstm.json"
