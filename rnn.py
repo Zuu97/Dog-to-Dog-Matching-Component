@@ -19,7 +19,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Input, Embedding, LSTM, Dense, Bidirectional, Dropout
 from variables import *
-from util import load_text_data
+from util import*
 
 import logging
 logging.getLogger('tensorflow').disabled = True
@@ -47,15 +47,24 @@ class DoggyRNN:
         Xtrain_seq = tokenizer.texts_to_sequences(self.Xtrain)
         self.Xtrain_pad = pad_sequences(Xtrain_seq, maxlen=max_length, truncating=trunc_type)
 
-        # print(Counter([len(x) for x in Xtrain_seq]))
+        word2index = tokenizer.word_index
+        self.embedding_matrix = load_pretrained_embeddings(word2index)
 
         Xtest_seq  = tokenizer.texts_to_sequences(self.Xtest)
         self.Xtest_pad = pad_sequences(Xtest_seq, maxlen=max_length)
         self.tokenizer = tokenizer
+        self.word2index = word2index
 
     def feature_extractor(self):
         inputs = Input(shape=(max_length,))
-        x = Embedding(output_dim=embedding_dimS, input_dim=vocab_size, input_length=max_length, name='embedding')(inputs)
+        x = Embedding(
+                    output_dim=get_embedding_dim(), 
+                    input_dim=len(self.word2index)+1, 
+                    weights=[self.embedding_matrix],
+                    input_length=max_length, 
+                    trainable=False,
+                    name='embedding'
+                    )(inputs)
         x = Bidirectional(LSTM(size_lstm), name='bidirectional_lstm')(x)
         x = Dense(dense_1_rnn, activation='relu', name='dense1')(x)
         x = Dense(dense_1_rnn, activation='relu', name='dense2')(x)
@@ -112,7 +121,7 @@ class DoggyRNN:
             self.tokenizing_data()
             self.feature_extractor()
             self.train()
-            # self.save_model()
+            self.save_model()
 
 if __name__ == "__main__":
     model = DoggyRNN()

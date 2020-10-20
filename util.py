@@ -103,3 +103,33 @@ def load_text_data():
     Ytrain, Ytest = Y[:-Ntest], Y[-Ntest:]
     return Xtrain, Xtest, Ytrain, Ytest
 
+def load_pretrained_embeddings(word2index):
+    if os.path.exists(embedding_matrix_path):
+        print("Pretrained embedding weights loading")
+        embedding_matrix = np.load(embedding_matrix_path)
+    else:
+        embeddings_index = {}
+        for line in open(word_embedding_path):
+            values = line.split()
+            word = values[0]
+            vector = np.asarray(values[1:], dtype='float32')
+            embeddings_index[word] = vector
+        open(word_embedding_path).close()
+
+        embedding_matrix = np.zeros((len(word2index) + 1, get_embedding_dim()))
+        for word, i in word2index.items():
+            embedding_vector = embeddings_index.get(word)
+            if embedding_vector is not None:
+                embedding_matrix[i] = embedding_vector
+            else:
+                if word == oov_tok:
+                    embedding_matrix[i] = embeddings_index.get('unk')
+
+        np.save(embedding_matrix_path, embedding_matrix)
+        print("Pretrained embedding weights saving")
+    return embedding_matrix
+
+def get_embedding_dim():
+    glove_text = os.path.split(word_embedding_path)[-1]
+    return int(glove_text.split('.')[-2][:-1])
+

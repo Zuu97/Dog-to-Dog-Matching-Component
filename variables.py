@@ -19,12 +19,12 @@ dense_1_cnn = 512
 dense_2_cnn = 256
 dense_3_cnn = 128
 epochs_cnn = 20
-train_dir = os.path.join(os.getcwd(), 'Images/')
+train_dir = os.path.join(os.getcwd(), 'data/Images/')
 cnn_weights = "weights/dog_mobilenet.h5"
 cnn_architecture = "weights/dog_mobilenet.json"
 
 ## RNN params
-csv_path = 'dog_reviews.csv'
+csv_path = 'data/dog_reviews.csv'
 vocab_size = 3000
 max_length = 30
 embedding_dimS = 512
@@ -35,6 +35,8 @@ batch_size_rnn = 32
 size_lstm  = 128
 dense_1_rnn = 256
 dense_2_rnn = 64
-learning_rate = 0.0001
+learning_rate = 0.
+embedding_matrix_path = "weights/embedding_matrix.npy"
+word_embedding_path = "data/word_embeddings/glove.6B.300d.txt"
 rnn_weights = "weights/dog_lstm.h5"
 rnn_architecture = "weights/dog_lstm.json"
