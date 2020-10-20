@@ -7,8 +7,8 @@ import pickle
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from sklearn.utils import shuffle
 from collections import Counter
+from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 
 from tensorflow.keras.preprocessing.text import Tokenizer
@@ -16,6 +16,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import model_from_json, Sequential, Model, load_model
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Input, Embedding, LSTM, Dense, Bidirectional, Dropout
 from variables import *
 from util import load_text_data
@@ -35,6 +36,8 @@ class DoggyRNN:
             self.Ytrain = Ytrain
             self.Xtest  = Xtest
             self.Ytest  = Ytest
+            print("Train input shape : {}".format(Xtrain.shape))
+            print("Test  input shape : {}".format(Xtest.shape))
             self.size_output = len(set(self.Ytest))
         
     def tokenizing_data(self):
@@ -43,6 +46,8 @@ class DoggyRNN:
 
         Xtrain_seq = tokenizer.texts_to_sequences(self.Xtrain)
         self.Xtrain_pad = pad_sequences(Xtrain_seq, maxlen=max_length, truncating=trunc_type)
+
+        # print(Counter([len(x) for x in Xtrain_seq]))
 
         Xtest_seq  = tokenizer.texts_to_sequences(self.Xtest)
         self.Xtest_pad = pad_sequences(Xtest_seq, maxlen=max_length)
