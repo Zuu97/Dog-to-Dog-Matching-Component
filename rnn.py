@@ -25,12 +25,12 @@ import logging
 logging.getLogger('tensorflow').disabled = True
 
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
-print("\nNum GPUs Available: {}\n".format(len(physical_devices)))
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 class DoggyRNN:
     def __init__(self):
         if not (os.path.exists(rnn_architecture)  and os.path.exists(rnn_weights)):
+            print('FUck')
             Xtrain, Xtest, Ytrain, Ytest = load_text_data()
             self.Xtrain = Xtrain
             self.Ytrain = Ytrain
