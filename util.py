@@ -28,23 +28,61 @@ def load_image_data():
                                     validation_split= val_split
                                     )
 
-    train_generator = train_datagen.flow_from_directory(
-                                    train_dir,
-                                    target_size = target_size,
-                                    color_mode = color_mode,
-                                    batch_size = batch_size_cnn,
-                                    classes = get_class_names(),
-                                    shuffle = True)
+    classes, images = load_data()
+    train_datagen.fit(images)
+    train_generator = train_datagen.flow(
+                                        images, 
+                                        images, 
+                                        batch_size=batch_size_cnn
+                                        )
 
-    validation_generator = train_datagen.flow_from_directory(
-                                    train_dir,
-                                    target_size = target_size,
-                                    color_mode = color_mode,
-                                    batch_size = batch_size_cnn,
-                                    classes = get_class_names(),
-                                    shuffle = True)
+    return train_generator, classes
+    # train_generator = train_datagen.flow_from_directory(
+    #                                 train_dir,
+    #                                 target_size = target_size,
+    #                                 color_mode = color_mode,
+    #                                 batch_size = batch_size_cnn,
+    #                                 classes = get_class_names(),
+    #                                 shuffle = True)
 
-    return train_generator, validation_generator
+    # validation_generator = train_datagen.flow_from_directory(
+    #                                 train_dir,
+    #                                 target_size = target_size,
+    #                                 color_mode = color_mode,
+    #                                 batch_size = batch_size_cnn,
+    #                                 classes = get_class_names(),
+    #                                 shuffle = True)
+
+    # return train_generator, validation_generator
+
+def load_data():
+    if not os.path.exists(save_path):
+        images = []
+        classes = []
+        url_strings = []
+        dog_folders = os.listdir(train_dir)
+        for label in list(dog_folders):
+            label_dir = os.path.join(train_dir, label)
+            label_images = []
+            print('{} : {}'.format(label, len(os.listdir(label_dir))))
+            for img_name in os.listdir(label_dir):
+                img_path = os.path.join(label_dir, img_name)
+                img = cv.imread(img_path)
+                img = cv.cvtColor(img, cv.COLOR_BGR2RGB)*rescale
+                img = cv.resize(img, target_size)
+
+                images.append(img)
+                classes.append(label)
+
+        images = np.array(images).astype('float32')
+        classes = np.array(classes).astype('str')
+        np.savez(save_path, name1=images, name2=classes)
+
+    else:
+        data = np.load(save_path, allow_pickle=True)
+        images = data['name1']
+        classes = data['name2']
+    return classes, images
 
 def preprocess_data(csv_path):
     df = pd.read_csv(csv_path, encoding='ISO 8859-1')

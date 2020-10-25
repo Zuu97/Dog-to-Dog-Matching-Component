@@ -1,10 +1,10 @@
 import os
-num_classes = 20
-val_split = 0.2
+num_classes = 5
+val_split = 0.15
 verbose = 1
 
 # CNN params
-batch_size_cnn = 64
+batch_size_cnn = 32
 color_mode = 'rgb'
 width = 224
 height = 224
@@ -26,10 +26,11 @@ upconv1_dim = (7, 7, 256)
 fs1 = 256
 fs2 = 128
 fs3 = 64
-epochs_cnn = 5
+epochs_cnn = 20
 train_dir = os.path.join(os.getcwd(), 'data/Images/')
-cnn_weights = "weights/dog_mobilenet.h5"
-cnn_architecture = "weights/dog_mobilenet.json"
+save_path = os.path.join(os.getcwd(), 'data/npz_images.npz')
+cnn_weights = "weights/cnn_autoencoder.h5"
+cnn_architecture = "weights/cnn_autoencoder.json"
 
 ## RNN params
 csv_path = 'dog_reviews.csv'

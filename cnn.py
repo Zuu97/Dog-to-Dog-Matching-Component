@@ -21,11 +21,16 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True)
 class DoggyCNN(object):
     def __init__(self):
         if not (os.path.exists(cnn_architecture)  and os.path.exists(cnn_weights)):
-            train_generator, validation_generator = load_image_data()
-            self.train_generator = train_generator
-            self.validation_generator = validation_generator
-            self.train_step = self.train_generator.samples // batch_size_cnn
-            self.validation_step = self.validation_generator.samples // batch_size_cnn
+            print('FUck')
+            # train_generator, validation_generator = load_image_data()
+            # self.train_generator = train_generator
+            # self.validation_generator = validation_generator
+            # self.train_step = self.train_generator.samples // batch_size_cnn
+            # self.validation_step = self.validation_generator.samples // batch_size_cnn
+
+            self.train_generator, classes = load_image_data()
+            self.train_step = len(classes) // batch_size_cnn
+
 
     def cnn_autoencoder(self): #MobileNet is not build through sequential API, so we need to convert it to sequential
         mobilenet_functional = tf.keras.applications.MobileNet()
@@ -38,12 +43,13 @@ class DoggyCNN(object):
         x = Dense(dense_1_cnn, activation='relu')(x)
         x = Dense(dense_2_cnn, activation='relu')(x)
         x = BatchNormalization()(x)
-
+        # outputs = Dense(num_classes, activation='relu')(x)
+        
         x = Dense(dense_3_cnn, use_bias=False)(x)
         x = BatchNormalization()(x)
         x = LeakyReLU()(x)
         x = Reshape(upconv1_dim)(x) # (7, 7, 256)
-        
+
         x = Conv2DTranspose(fs1, kernal_size, strides=stride2, padding='same', use_bias=False)(x)
         x = BatchNormalization()(x) # (14, 14, 256)
         x = LeakyReLU()(x)
@@ -72,19 +78,31 @@ class DoggyCNN(object):
         self.model = model
 
     def train(self):
+        # self.model.compile(
+        #                   optimizer='Adam',
+        #                   loss='categorical_crossentropy',
+        #                   metrics=['accuracy']
+        #                   )
+        # self.model.fit_generator(
+        #                   self.train_generator,
+        #                   steps_per_epoch = self.train_step,
+        #                   validation_data = self.validation_generator,
+        #                   validation_steps = self.validation_step,
+        #                   epochs=epochs_cnn,
+        #                   verbose=verbose
+        #                 )
+
         self.model.compile(
                           optimizer='Adam',
-                          loss='mse',
-                        #   metrics=['accuracy']
+                          loss='mse'
                           )
-        self.model.fit_generator(
-                          self.train_generator,
-                          steps_per_epoch = self.train_step,
-                          validation_data = self.validation_generator,
-                          validation_steps = self.validation_step,
-                          epochs=epochs_cnn,
-                          verbose=verbose
+        self.model.fit(
+                    self.train_generator,
+                    steps_per_epoch = self.train_step,
+                    epochs=epochs_cnn,
+                    verbose=verbose
                         )
+
 
     def save_model(self):
         print("Mobile Net TF Model Saving !")
@@ -102,11 +120,16 @@ class DoggyCNN(object):
         self.model = model_from_json(loaded_model_json)
         self.model.load_weights(cnn_weights)
 
+        # self.model.compile(
+        #                    loss='categorical_crossentropy', 
+        #                    optimizer='Adam', 
+        #                    metrics=['accuracy']
+        #                    )
+
         self.model.compile(
-                           loss='categorical_crossentropy', 
-                           optimizer='Adam', 
-                           metrics=['accuracy']
-                           )
+                          optimizer='Adam',
+                          loss='mse'
+                          )
         print("Mobile Net TF Model Loaded !")
 
 
@@ -115,8 +138,8 @@ class DoggyCNN(object):
             self.load_model()
         else:
             self.cnn_autoencoder()
-            # self.train()
-            # self.save_model()
+            self.train()
+            self.save_model()
 
 model = DoggyCNN()
 model.run()

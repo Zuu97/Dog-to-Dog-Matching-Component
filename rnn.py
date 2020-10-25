@@ -16,6 +16,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import model_from_json, Sequential, Model, load_model
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Input, Embedding, LSTM, Dense, Bidirectional, Dropout
 from variables import *
 from util import load_text_data
@@ -29,6 +30,7 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True)
 class DoggyRNN:
     def __init__(self):
         if not (os.path.exists(rnn_architecture)  and os.path.exists(rnn_weights)):
+            print('FUck')
             Xtrain, Xtest, Ytrain, Ytest = load_text_data()
             self.Xtrain = Xtrain
             self.Ytrain = Ytrain
