@@ -35,6 +35,8 @@ class DoggyRNN:
             self.Ytrain = Ytrain
             self.Xtest  = Xtest
             self.Ytest  = Ytest
+            print("Train input shape : {}".format(Xtrain.shape))
+            print("Test  input shape : {}".format(Xtest.shape))
             self.size_output = len(set(self.Ytest))
             print("Train input shape : {}".format(Xtrain.shape))
             print("Test  input shape : {}".format(Xtest.shape))
