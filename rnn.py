@@ -24,7 +24,6 @@ import logging
 logging.getLogger('tensorflow').disabled = True
 
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
-print("\nNum GPUs Available: {}\n".format(len(physical_devices)))
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 class DoggyRNN:
