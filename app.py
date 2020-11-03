@@ -2,7 +2,6 @@ import os
 import json
 import pandas as pd
 import numpy as np
-import cv2 as cv
 from variables import *
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
