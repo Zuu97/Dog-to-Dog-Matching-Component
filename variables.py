@@ -28,12 +28,11 @@ upconv1_dim = (7, 7, 256)
 fs1 = 256
 fs2 = 128
 fs3 = 64
-epochs_cnn = 20
+epochs_cnn = 5
 train_dir = os.path.join(os.getcwd(), 'data/Images/')
 save_path = os.path.join(os.getcwd(), 'weights/numpy_images.npz')
-final_save_path = os.path.join(os.getcwd(), 'weights/final_data.npz')
 cnn_weights = "weights/cnn_autoencoder.h5"
-cnn_model_converter = "weights/cnn_model.tflite"
+cnn_converter_path = "weights/cnn_model.tflite"
 
 ## RNN params
 csv_path = 'data/dog_reviews.csv'
@@ -51,9 +50,21 @@ dense_3_rnn = 64
 learning_rate = 0.0001
 rnn_weights = "weights/rnn_classifier.h5"
 
-## Final Model Params 
-epochs_final = 20
-dense_1_final = 128 
-dense_2_final = 64
-final_model_weights = "weights/final_model.h5"
-final_model_converter = "weights/final_model.tflite"
+## RCN Model Params 
+tokenizer_path = 'weights/tokenizer.pickle'
+epochs_rcn = 30
+dense_1_rcn = 128 
+dense_2_rcn = 64
+batch_size_rcn = 32
+keep_prob = 0.3
+rcn_weights = "weights/rcn_model.h5"
+rcn_converter_path = "weights/rcn_model.tflite"
+
+##Inference
+host = '0.0.0.0'
+port = 5000
+inference_save_path = os.path.join(os.getcwd(), 'weights/inference_images.npz')
+dog_classes = {'shih tzu', 'papillon', 'maltese', 'afghan hound', 'beagle'}
+n_neighbour_weights = 'weights/nearest_neighbour.pkl'
+n_neighbour = 3
+min_test_sample = 10

@@ -49,6 +49,7 @@ class DoggyCNN(object):
                             outputs=outputs,
                             name='CNN_Model'
                             )
+        self.model.summary()
 
     def train(self):
         self.model.compile(

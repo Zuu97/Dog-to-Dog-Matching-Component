@@ -1,5 +1,6 @@
 import os
 import re
+import pickle
 import cv2 as cv
 import numpy as np
 import pandas as pd
@@ -29,7 +30,6 @@ def check_img_extension():
     dog_folders = os.listdir(train_dir)
     for label in list(dog_folders):
         label_dir = os.path.join(train_dir, label)
-        label_images = []
         print(' {} : {}'.format(label, len(os.listdir(label_dir))))
         for img_name in os.listdir(label_dir):
             url_strings.append(img_name)
@@ -78,7 +78,6 @@ def load_data():
         dog_folders = os.listdir(train_dir)
         for label in list(dog_folders):
             label_dir = os.path.join(train_dir, label)
-            label_images = []
             print(' {} : {}'.format(label, len(os.listdir(label_dir))))
             for img_name in os.listdir(label_dir):
                 img_path = os.path.join(label_dir, img_name)
@@ -165,7 +164,7 @@ def load_text_data():
     Xtrain, Xtest = X[:-Ntest], X[-Ntest:]
     Ytrain, Ytest = Y[:-Ntest], Y[-Ntest:]
 
-    Xtrain_pad, Xtest_pad, _ = tokenizing_data(Xtrain, Xtest)
+    Xtrain_pad, Xtest_pad = tokenizing_data(Xtrain, Xtest)
     return Xtrain_pad, Xtest_pad, Ytrain, Ytest
 
 def load_filtered_images(img_names):
@@ -174,7 +173,6 @@ def load_filtered_images(img_names):
     dog_folders = os.listdir(train_dir)
     for label in list(dog_folders):
         label_dir = os.path.join(train_dir, label)
-        label_images = []
         for img_name in os.listdir(label_dir):
             img_ = img_name.split('.')[0].strip()
             if img_ in img_names:
@@ -191,21 +189,42 @@ def load_filtered_images(img_names):
     return images, containing_img_names
 
 def tokenizing_data(Xtrain, Xtest):
-    tokenizer = Tokenizer(num_words = vocab_size, oov_token=oov_tok)
-    tokenizer.fit_on_texts(Xtrain)
+    if not os.path.exists(tokenizer_path):
+        tokenizer = Tokenizer(num_words = vocab_size, oov_token=oov_tok)
+        tokenizer.fit_on_texts(Xtrain)
+        save_tokenizer(tokenizer)
+
+    else:
+        tokenizer = load_tokenizer()
 
     Xtrain_seq = tokenizer.texts_to_sequences(Xtrain)
     Xtrain_pad = pad_sequences(Xtrain_seq, maxlen=max_length, truncating=trunc_type)
 
     Xtest_seq  = tokenizer.texts_to_sequences(Xtest)
     Xtest_pad = pad_sequences(Xtest_seq, maxlen=max_length)
-    return Xtrain_pad, Xtest_pad, tokenizer
+    return Xtrain_pad, Xtest_pad
 
-def load_final_data():
+def tokenize_inference_text(X):
+    tokenizer = load_tokenizer()
+    X_seq = tokenizer.texts_to_sequences(X)
+    X_pad = pad_sequences(X_seq, maxlen=max_length, truncating=trunc_type)
+    return X_pad
+
+def save_tokenizer(tokenizer):
+    with open(tokenizer_path, 'wb') as handle:
+        pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    print(" Tokenizer Saved")
+
+def load_tokenizer():
+    with open(tokenizer_path, 'rb') as handle:
+        tokenizer = pickle.load(handle)
+    print(" Tokenizer Loaded")
+    return tokenizer
+
+def load_rcn_data():
     df = pd.read_csv(csv_path, encoding='ISO 8859-1')
     df = df.drop_duplicates(subset=['ImageName'])
     df['Breed'] = df['Breed'].str.lower()
-    classes = df['Breed'].str.strip().values 
     df['Breed'] = df['Breed'].replace('afgan hound', 'afghan hound')
 
     img_names = df['ImageName'].str.strip().values 
@@ -217,6 +236,82 @@ def load_final_data():
     Ntest = int(val_split * len(doggy_reviews))
     reviews, images = shuffle(doggy_reviews, images)
     Reviewtrain, Reviewval = reviews[:-Ntest], reviews[-Ntest:]
-    Xtrain_pad, Xtest_pad, tokenizer = tokenizing_data(Reviewtrain, Reviewval)
-    Imgtrain, Imgval = images[:-Ntest], images[-Ntest:]
-    return Xtrain_pad, Xtest_pad, Imgtrain, Imgval, tokenizer
+    Xtrain_pad, Xtest_pad = tokenizing_data(Reviewtrain, Reviewval)
+    Imgtrain, Imgtest = images[:-Ntest], images[-Ntest:]
+    return Xtrain_pad, Xtest_pad, Imgtrain, Imgtest
+
+def filter_images(image_labels):
+    idxs = []
+    for label in dog_classes:
+        idx = np.where(image_labels==label)[0]
+        idx = np.random.choice(idx, min_test_sample, replace=False)
+        idxs.extend(idx.tolist())
+    return idxs
+
+
+def load_inference_data():
+    if not os.path.exists(inference_save_path):
+        print(" Inference Images are Saving ")
+        df = pd.read_csv(csv_path, encoding='ISO 8859-1')
+        df = df.drop_duplicates(subset=['ImageName'])
+        df['Breed'] = df['Breed'].str.lower()
+        df['Breed'] = df['Breed'].replace('afgan hound', 'afghan hound')
+
+        img_names = df['ImageName'].str.strip().values 
+
+        image_labels = []
+        inference_images = []
+        url_paths = []
+        dog_folders = os.listdir(train_dir)
+        for label in list(dog_folders):
+            label_dir = os.path.join(train_dir, label)
+            for img_name in os.listdir(label_dir):
+                img_ = img_name.split('.')[0].strip()
+                if img_ not in img_names:
+                    img_path = os.path.join(label_dir, img_name)
+                    img = cv.imread(img_path)
+                    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+                    img = cv.resize(img, target_size)
+                    img = preprocessing_function(img)
+                    inference_images.append(img)
+                    image_labels.append(label)
+                    url_paths.append(img_path)
+
+        inference_images = np.array(inference_images).astype('float32')
+        image_labels = np.array(image_labels).astype('str')
+        image_urls = np.array(url_paths).astype('str')
+
+        image_labels, inference_images, image_urls = shuffle(image_labels, inference_images, image_urls)
+        idxs = filter_images(image_labels)
+
+        inference_images = inference_images[idxs]
+        image_labels = image_labels[idxs]
+        image_urls = image_urls[idxs]
+
+        np.savez(inference_save_path, name1=inference_images, name2=image_labels, name3=image_urls)
+
+    else:
+        print(" Inference Images are Loading ")
+        data = np.load(inference_save_path, allow_pickle=True)
+        inference_images = data['name1']
+        image_labels = data['name2']
+        image_urls = data['name3']
+
+    return image_labels, inference_images, image_urls
+
+def load_labeled_data(image_labels, inference_images, image_urls, label):
+    idxs = (image_labels==label)
+    labels = image_labels[idxs]
+    images = inference_images[idxs]
+    urls = image_urls[idxs]
+    return labels, images, urls
+
+def get_prediction_data(data):
+    text, label = data["text"], data["label"] 
+    label = str(label).lower()
+    text = preprocessed_data(text)
+    text_pad = tokenize_inference_text(text)[0]
+    return text_pad, label
+
+def rescale_imgs(img):
+    return (img * 127.5) + 127.5

@@ -38,7 +38,7 @@ class DoggyRNN:
     def feature_extractor(self):
         inputs = Input(shape=(max_length,))
         x = Embedding(output_dim=embedding_dimS, input_dim=vocab_size, input_length=max_length, name='embedding')(inputs)
-        x = Bidirectional(LSTM(size_lstm), name='bidirectional_lstm')(x)
+        x = Bidirectional(LSTM(size_lstm, unroll=True), name='bidirectional_lstm')(x)
         x = Dense(dense_1_rnn, activation='relu', name='dense1')(x)
         x = Dense(dense_1_rnn, activation='relu', name='dense2')(x)
         x = Dense(dense_2_rnn, activation='relu', name='dense3')(x)
