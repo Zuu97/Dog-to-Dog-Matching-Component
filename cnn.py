@@ -11,7 +11,6 @@ from tensorflow.keras.layers import Activation, Dense, Input, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as K
 from matplotlib import pyplot as plt
-from sklearn.neighbors import NearestNeighbors
 from util import load_image_data, get_test_image
 from variables import *
 np.random.seed(seed)
