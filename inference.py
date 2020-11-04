@@ -50,14 +50,15 @@ class InferenceModel(object):
         self.cnn_inference = cnn_inference
         
     def extract_image_features(self, label):
-        self.image_labels, self.inference_images, self.image_urls = load_labeled_data(
-                                                                                self.image_labels, 
-                                                                                self.inference_images, 
-                                                                                self.image_urls,
-                                                                                label)
+
+        self.image_labels_class, self.inference_images_class, self.image_urls_class = load_labeled_data(
+                                                                                        self.image_labels, 
+                                                                                        self.inference_images, 
+                                                                                        self.image_urls,
+                                                                                        label)
         if not os.path.exists(n_neighbour_weights.format(label)):
             self.test_features = np.array(
-                            [self.cnn_inference.Inference(img) for img in self.inference_images]
+                            [self.cnn_inference.Inference(img) for img in self.inference_images_class]
                                         )
             self.test_features = self.test_features.reshape(self.test_features.shape[0],-1)
             self.neighbor = NearestNeighbors(
@@ -81,8 +82,8 @@ class InferenceModel(object):
         result = self.neighbor.kneighbors(text_pad)[1].squeeze()
         for i in range(n_neighbour):
             neighbour_img_id = result[i]
-            img = self.inference_images[neighbour_img_id]
-            url = self.image_urls[neighbour_img_id]
+            img = self.inference_images_class[neighbour_img_id]
+            url = self.image_urls_class[neighbour_img_id]
             img = rescale_imgs(img)
             fig.add_subplot(1, 3, i+1)
             plt.title('Neighbour {}'.format(i+1))
