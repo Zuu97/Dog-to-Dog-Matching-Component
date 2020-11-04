@@ -27,7 +27,7 @@ app = Flask(__name__)
 
 
 
-@app.route("/predict", methods=["POST"])
+@app.route("/predict", methods=["GET", "POST"])
 def predict(show_fig=False):
     message = request.get_json(force=True)
     if len(message) == 2:
