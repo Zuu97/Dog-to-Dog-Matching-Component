@@ -28,12 +28,12 @@ app = Flask(__name__)
 
 
 @app.route("/predict", methods=["POST"])
-def predict():
+def predict(show_fig=False):
     message = request.get_json(force=True)
     if len(message) == 2:
         text_pad, label = get_prediction_data(message)
         model.extract_image_features(label)
-        n_neighbours = model.predictions(text_pad)
+        n_neighbours = model.predictions(text_pad, show_fig)
         response = {
             "neighbours": n_neighbours
                     }

@@ -50,30 +50,30 @@ class InferenceModel(object):
         self.cnn_inference = cnn_inference
         
     def extract_image_features(self, label):
-        # if not os.path.exists(n_neighbour_weights):
         self.image_labels, self.inference_images, self.image_urls = load_labeled_data(
                                                                                 self.image_labels, 
                                                                                 self.inference_images, 
                                                                                 self.image_urls,
                                                                                 label)
-        self.test_features = np.array(
-                        [self.cnn_inference.Inference(img) for img in self.inference_images]
-                                    )
-        self.test_features = self.test_features.reshape(self.test_features.shape[0],-1)
-        self.neighbor = NearestNeighbors(
-                                    n_neighbors = n_neighbour,
-                                    )
-        self.neighbor.fit(self.test_features)
-        #     with open(n_neighbour_weights, 'wb') as file:
-        #         pickle.dump(self.neighbor, file)
-        # else:
-        #     with open(n_neighbour_weights, 'rb') as file:
-        #         self.neighbor = pickle.load(file)
+        if not os.path.exists(n_neighbour_weights.format(label)):
+            self.test_features = np.array(
+                            [self.cnn_inference.Inference(img) for img in self.inference_images]
+                                        )
+            self.test_features = self.test_features.reshape(self.test_features.shape[0],-1)
+            self.neighbor = NearestNeighbors(
+                                        n_neighbors = n_neighbour
+                                        )
+            self.neighbor.fit(self.test_features)
+            with open(n_neighbour_weights.format(label), 'wb') as file:
+                pickle.dump(self.neighbor, file)
+        else:
+            with open(n_neighbour_weights.format(label), 'rb') as file:
+                self.neighbor = pickle.load(file)
 
     def extract_text_features(self, text_pad):
         return self.rcn_inference.Inference(text_pad)
 
-    def predictions(self, text_pad):
+    def predictions(self, text_pad, show_fig=False):
         n_neighbours = {}
         fig=plt.figure(figsize=(8, 8))
         text_pad = self.extract_text_features(text_pad)
@@ -88,5 +88,17 @@ class InferenceModel(object):
             plt.title('Neighbour {}'.format(i+1))
             plt.imshow((img * 255).astype('uint8'))
             n_neighbours["Neighbour {}".format(i+1)] =  "{}".format(url)
-        # plt.show()
+        if show_fig:
+            plt.show()
         return n_neighbours
+
+# message = {
+#     "text" : "I would like to arrange a playdate for my female small size Maltese puppy it is very playful,active and have a good behaviour with other pets and behave well with strangers love go for walks. we live in kalutara.",
+#     "label" : "shih tzu"
+#     }
+
+
+# model = InferenceModel()
+# text_pad, label = get_prediction_data(message)
+# model.extract_image_features(label)
+# model.predictions(text_pad)

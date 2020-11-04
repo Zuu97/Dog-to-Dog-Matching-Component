@@ -25,6 +25,9 @@ def preprocessing_function(img):
     img = tf.keras.applications.mobilenet_v2.preprocess_input(img)
     return img
 
+def rescale_imgs(img):
+    return (img * 127.5) + 127.5
+    
 def check_img_extension():
     url_strings = []
     dog_folders = os.listdir(train_dir)
@@ -244,7 +247,8 @@ def filter_images(image_labels):
     idxs = []
     for label in dog_classes:
         idx = np.where(image_labels==label)[0]
-        idx = np.random.choice(idx, min_test_sample, replace=False)
+        if len(idx) > min_test_sample:
+            idx = np.random.choice(idx, min_test_sample, replace=False)
         idxs.extend(idx.tolist())
     return idxs
 
@@ -312,6 +316,3 @@ def get_prediction_data(data):
     text = preprocessed_data(text)
     text_pad = tokenize_inference_text(text)[0]
     return text_pad, label
-
-def rescale_imgs(img):
-    return (img * 127.5) + 127.5
